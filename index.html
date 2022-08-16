@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BilleterApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-success">
+        <div class="container-fluid">
+            <h1 class="text-light me-5"><i class="fas fa-wallet mx-3"></i>BilleterApp</h1>
+            <button class="navbar-toggler navbar-dark text-light" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item h5">
+                        <a class="nav-link text-light" aria-current="page" href="#" onclick="showBalance()">
+                            <i class="fas fa-chart-line" aria-hidden="true"> Balance</i></a>
+                    </li>
+                    <li class="nav-item h5">
+                        <a class="nav-link text-light" aria-current="page" href="#" onclick="showCategorias()">
+                            <i class="fas fa-tag" aria-hidden="true"> Categorías</i></a>
+                    </li>
+                    <li class="nav-item h5">
+                        <a class="nav-link text-light" aria-current="page" href="#" onclick="showReportes()">
+                            <i class="fas fa-chart-pie mr-2" aria-hidden="true"> Reportes</i></a>
+                    </li>
+                </ul>
+            </div>
+    </nav>
+
+    <!-- SECCION BALANCE -->
+
+    <section id="seccion-balance" class="container mt-5">
+        <div class="row">
+
+            <!-- Columna izquierda -->
+            <div class="col">
+
+                <!-- Sub-seccion Balance -->
+                <div class="card shadow m-3 p-3">
+                    <h1 class="mb-3">Balance</h1>
+                    <p class="row">
+                        <span class="col">Ganancias</span>
+                        <span class="col text-end text-success" id="balance-ganancias"></span>
+                    </p>
+                    <p class="row">
+                        <span class="col">Gastos</span>
+                        <span class="col text-end text-danger" id="balance-gastos"></span>
+                    </p>
+                    <p class="row">
+                        <span class="col">Total</span>
+                        <span class="col text-end fw-bold" id="balance-total"></span>
+                    </p>
+                </div>
+
+                <!-- Sub-seccion Filtros -->
+                <div class="card shadow m-3 p-3">
+                    <div class="row">
+                        <h3 class="col">Filtros</h3>
+                        <a class="col text-end" id="ocultar-filtros" href="#" onclick="hideFilters()">Ocultar filtros</a>
+                        <a class="col text-end visually-hidden" id="mostrar-filtros" href="#" onclick="showFilters()">Mostrar
+                            filtros</a>
+                    </div>
+                    <div id="filtros">
+                        <label class="h6" for="">Tipo</label>
+                        <select class="form-select" name="" id="filtros-tipo" onchange="changeFilter(getOperaciones())">
+                            <option value="">Todos</option>
+                            <option value="">Gasto</option>
+                            <option value="">Ganancia</option>
+                        </select>
+                        <label class="h6" for="">Categoría</label>
+                        <select class="form-select" name="" id="filtros-categoria" onchange="changeFilter(getOperaciones())"></select>
+                        <label class="h6" for="">Desde</label>
+                        <input class="form-control" type="date" id="filtros-fecha" onchange="changeFilter(getOperaciones())">
+                        <label class="h6" for="">Ordenar por</label>
+                        <select class="form-select" name="" id="filtros-orden" onchange="changeFilter(getOperaciones())">
+                            <option value="">Más reciente</option>
+                            <option value="">Menos reciente</option>
+                            <option value="">Mayor monto</option>
+                            <option value="">Menor monto</option>
+                            <option value="">A/Z</option>
+                            <option value="">Z/A</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha -->
+            <div class="col">
+
+                <!-- Sub-seccion Operaciones -->
+                <div class="col">
+                    <div class="card shadow m-3 p-3">
+                        <div class="row">
+                            <h3 class="col">Operaciones</h2>
+                                <button class="col-4 btn btn-success me-2">
+                                    <i class="fas fa-plus h5" onclick="showNuevaOperacion()">&nbsp;Nueva operación</i>
+                                </button>
+                        </div>
+                        <div class="container-fluid table-responsive mt-3">
+                            <table class="table table-borderless table-hover visually-hidden" id="operaciones-results">
+                            </table>
+                        </div>
+                        <div id="operaciones-no-results">
+                            <div class="text-center p-3">
+                                <img class="img-fluid m-3" src="img/wallet.svg" alt="">
+                            </div>
+                            <p class="h4 text-center">Sin resultados</p>
+                            <p class="text-center">Cambia los filtros o agrega operaciones</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <!-- Sub-seccion nueva operacion -->
+
+    <section id="nueva-operacion" class="container d-flex justify-content-center mt-5 visually-hidden">
+        <div class="card shadow col-lg-6 m-3 p-3">
+            <h1>Nueva operación</h1>
+            <div class="mx-3">
+                <div class="input group">
+                    <label class="h6" for="">Descripción</label>
+                    <textarea class="form-control" id="nueva-operacion-descripcion" rows="3"></textarea>
+                    <label class="h6" for="">Monto</label>
+                    <input class="form-control" id="nueva-operacion-monto" type="number">
+                    <label class="h6" for="">Tipo</label>
+                    <select class="form-select" name="" id="nueva-operacion-tipo">
+                        <option value="">Gasto</option>
+                        <option value="">Ganancia</option>
+                    </select>
+                    <label class="h6" for="">Caegoría</label>
+                    <select class="form-select" name="" id="nueva-operacion-categoria"></select>
+                    <label class="h6" for="">Fecha</label>
+                    <input class="form-control" id="nueva-operacion-fecha" type="date">
+                </div>
+                <div class="text-center m-2">
+                    <button class="btn btn-secondary" onclick="showBalance()">Cancelar</button>
+                    <button class="btn btn-success" onclick="newOperacion()">Agregar</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sub-seccion editar operacion -->
+
+    <section id="editar-operacion" class="container d-flex justify-content-center mt-5 visually-hidden">
+        <div class="card shadow col-lg-6 m-3 p-3">
+            <h1>Editar operación</h1>
+            <div class="mx-3">
+                <div class="input group">
+                    <label class="h6" for="">Descripción</label>
+                    <textarea class="form-control" id="editar-operacion-descripcion" rows="3"></textarea>
+                    <label class="h6" for="">Monto</label>
+                    <input class="form-control" id="editar-operacion-monto" type="number">
+                    <label class="h6" for="">Tipo</label>
+                    <select class="form-select" name="" id="editar-operacion-tipo">
+                        <option value="">Gasto</option>
+                        <option value="">Ganancia</option>
+                    </select>
+                    <label class="h6" for="">Caegoría</label>
+                    <select class="form-select" name="" id="editar-operacion-categoria"></select>
+                    <label class="h6" for="">Fecha</label>
+                    <input class="form-control" id="editar-operacion-fecha" type="date">
+                </div>
+                <div class="text-center m-2">
+                    <button class="btn btn-secondary" onclick="showBalance()">Cancelar</button>
+                    <button class="btn btn-success" id="boton-editar-operacion"
+                        onclick="editOperacion()">Agregar</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCION CATEGORIAS -->
+
+    <section id="seccion-categorias" class="container d-flex justify-content-center mt-5 visually-hidden">
+        <div class="card shadow col-lg-8 m-3 p-3">
+            <h1>Categorías</h1>
+            <div class="mx-3">
+                <div class="input-group">
+                    <input class="form-control me-2" id="agregar-categoria" type="text">
+                    <button class="btn btn-success" onclick="newCategoria()">Agregar</button>
+                </div>
+            </div>
+            <div id="lista-categorias" class="m-3"></div>
+        </div>
+    </section>
+
+    <!-- Sub-seccion editar categoria -->
+
+    <section id="editar-categoria" class="container d-flex justify-content-center mt-5 visually-hidden">
+        <div class="card shadow col-lg-6 m-3 p-3">
+            <h1>Editar categoría</h1>
+            <div class="mx-3">
+                <label class="h6" for="">Nombre</label>
+                <div class="input-group">
+                    <input class="form-control me-2" id="input-editar-categoria" type="text">
+                </div>
+                <div class="text-center m-2">
+                    <button class="btn btn-secondary" onclick="showCategorias()">Cancelar</button>
+                    <button class="btn btn-success" id="boton-editar-categoria">Editar</button>
+                </div>
+            </div>
+            <div id="lista-categorias" class="m-3"></div>
+        </div>
+    </section>
+
+    <!-- SECCION REPORTES -->
+
+    <section id="seccion-reportes" class="container d-flex justify-content-center mt-5 visually-hidden">
+        <div class="card shadow col-lg-8 m-3 p-3">
+            <h1>Reportes</h2>
+                <div class="visually-hidden" id="reportes-results">
+                    <div class="container-fluid table-responsive mt-3">
+                    <!-- Resumen -->
+                    <h3>Resumen</h3>
+                    <table class="table table-borderless table-hover" id="reportes-resumen">
+                    </table>
+                    <!-- Totales por categoría -->
+                    <h3>Totales por categoría</h3>
+                    <table class="table table-borderless table-hover" id="reportes-totales-categoria">
+                    </table>
+                    <!-- Totales por mes -->
+                    <h3>Totales por mes</h3>
+                    <table class="table table-borderless table-hover" id="reportes-totales-mes">
+                    </table>
+                </div>
+        </div>
+        <div class="text-center p-3" id="reportes-no-results">
+            <img class="img-fluid m-3" src="img/chart.svg" alt="">
+            <p class="h4 text-center">Operaciones insuficientes</p>
+            <p class="text-center">Prueba agregando más operaciones</p>
+        </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/c9e4e4ea43.js" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
