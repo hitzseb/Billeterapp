@@ -13,9 +13,10 @@ if (localStorage.getItem("operaciones") === null) {
 if (localStorage.getItem("contador") === null) {
     localStorage.setItem('contador', 0)
 }
-if(localStorage.getItem("fecha") === null) {
-    let fecha = new Date().toISOString().split('T')[0]
-    localStorage.setItem("fecha", fecha)
+try {
+    localStorage.setItem("fecha", sortOperacionesFechaMenosReciente(getOperaciones())[0].fecha)
+} catch (error) {
+    localStorage.setItem("fecha", new Date().toISOString().split('T')[0])
 }
 
 // Insertar datos
@@ -161,22 +162,28 @@ function populateOperaciones() {
 }
 
 function renderBalance(operaciones) {
-    let ganancias = montoOperaciones(getGanancias(operaciones))
-    let gastos = montoOperaciones(getGastos(operaciones))
-    document.getElementById("balance-ganancias").innerHTML = `${'+ $' + ganancias}`
-    document.getElementById("balance-gastos").innerHTML = `${'- $' + gastos}`
-    if (ganancias - gastos > 0) {
-        document.getElementById("balance-total").innerHTML = `${'+ $' + (ganancias - gastos)}`
-    }
-    if (ganancias - gastos < 0) {
-        document.getElementById("balance-total").innerHTML = `${'- $' + (Math.abs(ganancias - gastos))}`
-    }
-    if (ganancias - gastos == 0) {
-        document.getElementById("balance-total").innerHTML = `${'$' + 0}`
+    if(getOperaciones() > 0) {
+        let ganancias = montoOperaciones(getGanancias(operaciones))
+        let gastos = montoOperaciones(getGastos(operaciones))
+        document.getElementById("balance-ganancias").innerHTML = `${'+ $' + ganancias}`
+        document.getElementById("balance-gastos").innerHTML = `${'- $' + gastos}`
+        if (ganancias - gastos > 0) {
+            document.getElementById("balance-total").innerHTML = `${'+ $' + (ganancias - gastos)}`
+        }
+        if (ganancias - gastos < 0) {
+            document.getElementById("balance-total").innerHTML = `${'- $' + (Math.abs(ganancias - gastos))}`
+        }
+        if (ganancias - gastos == 0) {
+            document.getElementById("balance-total").innerHTML = `${'$' + 0}`
+        }
     }
 }
 
 function renderOperaciones(operaciones) {
+    if(operaciones == undefined) {
+        document.getElementById("operaciones-results").classList.add('visually-hidden')
+        document.getElementById("operaciones-no-results").classList.remove('visually-hidden')
+    }
     if (operaciones.length > 0) {
         document.getElementById("operaciones-no-results").classList.add('visually-hidden')
         document.getElementById("operaciones-results").classList.remove('visually-hidden')
@@ -246,22 +253,24 @@ function renderReportes() {
             <th class="col-3">Balance</th>
         </tr>`
     for (let i = 0; i < getCategorias().length; i++) {
-        if (gananciaPorCategoria(getCategorias[i], getOperaciones()) >= 0) {
-            document.getElementById("reportes-totales-categoria").innerHTML +=
-                `<tr>
+        if (getOperaciones().filter(operacion => operacion.categoria == getCategorias()[i]).length > 0) {
+            if (gananciaPorCategoria(getCategorias[i], getOperaciones()) >= 0) {
+                document.getElementById("reportes-totales-categoria").innerHTML +=
+                    `<tr>
                     <td>${getCategorias()[i]}</td>
                     <td><span class="text-success">${'+ ' + montoOperaciones(filtrarOperacionesCategoria(getCategorias()[i], getGanancias(getOperaciones())))}</span></td>
                     <td><span class="text-danger">${'- ' + montoOperaciones(filtrarOperacionesCategoria(getCategorias()[i], getGastos(getOperaciones())))}</span></td>
                     <td><span class="text-success">${'+ ' + (montoOperaciones(filtrarOperacionesCategoria(getCategorias()[i], getGanancias(getOperaciones()))) - montoOperaciones(filtrarOperacionesCategoria(getCategorias()[i], getGastos(getOperaciones()))))}</span></td>
                 </tr>`
-        } else {
-            document.getElementById("reportes-totales-categoria").innerHTML +=
-                `<tr>
+            } else {
+                document.getElementById("reportes-totales-categoria").innerHTML +=
+                    `<tr>
                     <td>${getCategorias()[i]}</td>
                     <td><span class="text-success">${'+ ' + montoOperaciones(filtrarOperacionesCategoria(getCategorias()[i], getGanancias(getOperaciones())))}</span></td>
                     <td><span class="text-danger">${'- ' + montoOperaciones(filtrarOperacionesCategoria(getCategorias()[i], getGastos(getOperaciones())))}</span></td>
                     <td><span class="text-danger">${'- ' + (montoOperaciones(filtrarOperacionesCategoria(getCategorias()[i], getGanancias(getOperaciones()))) - montoOperaciones(filtrarOperacionesCategoria(getCategorias()[i], getGastos(getOperaciones()))))}</span></td>
                 </tr>`
+            }
         }
     }
     document.getElementById("reportes-totales-mes").innerHTML = ``
@@ -478,37 +487,21 @@ function changeFilter(operaciones) {
 // filtros funciones
 
 function filtrarOperacionesTipo(tipo, operaciones) {
-    if (tipo === 'Todos') {
-        return operaciones
-    } else if(tipo == 'Ganancias') {
-        return getGanancias(operaciones)
-    } else if(tipo == 'Gastos') {
-        return getGastos(operaciones)
+    if (tipo !== 'Todos') {
+        return operaciones.filter(operacion => operacion.tipo === tipo)
     }
+    return operaciones
 }
 
 function filtrarOperacionesCategoria(categoria, operaciones) {
-    if (categoria === 'Todas') {
-        return operaciones
-    } else {
-        let operacionesCategoria = []
-        for (let i = 0; i < operaciones.length; i++) {
-            if (operaciones[i].categoria == categoria) {
-                operacionesCategoria.push(operaciones[i])
-            }
-        }
-        return operacionesCategoria
+    if (categoria !== 'Todas') {
+        return operaciones.filter(operacion => operacion.categoria === categoria)
     }
+    return operaciones
 }
 
-function filtrarOperacionesSinceDate(date, operaciones) {
-    let operacionesSinceDate = []
-    for (let i = 0; i < operaciones.length; i++) {
-        if (operaciones[i].fecha >= date) {
-            operacionesSinceDate.push(operaciones[i])
-        }
-    }
-    return operacionesSinceDate
+function filtrarOperacionesSinceDate(fecha, operaciones) {
+    return operaciones.filter(operacion => operacion.fecha > fecha)
 }
 
 function sortOperacionesFechaMenosReciente(operaciones) {
